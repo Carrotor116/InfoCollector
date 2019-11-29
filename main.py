@@ -15,13 +15,6 @@ def _quit():
 
 
 def run_server():
-    # init conf
-    # try:
-    #     CmdOption().init_conf(sys.argv[1:])
-    # except OptionError as e:
-    #     print('ERROR: {}\n\n{}\n'.format(e.msg, usage_short))
-    #     sys.exit(-1)
-
     print('InfoCollector is available at following address:')
     ips = network_util.get_ip_v4()
     for _ip in ips:
