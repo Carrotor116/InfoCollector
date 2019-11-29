@@ -42,4 +42,5 @@ def submit_devices():
 @app.route('/')
 def index():
     devices = db.select_all(Device)
+    devices.sort(key=lambda d: d.name)
     return render_template('index.html', devices=devices)
