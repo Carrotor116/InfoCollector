@@ -1,6 +1,9 @@
 import sqlite3
 
-conn = sqlite3.connect('test.db')
+import config
+from log import _logger as logger
+
+conn = sqlite3.connect(config.DATABASE)
 
 
 def _get_table_name(obj):
@@ -47,7 +50,7 @@ def create_table(cls) -> bool:
         conn.commit()
         return True
     except Exception as e:
-        print(e)
+        logger.info(e)
     return False
 
 
@@ -62,7 +65,7 @@ def insert(obj) -> bool:
         conn.cursor().execute(sql)
         conn.commit()
     except Exception as e:
-        print(e)
+        logger.info(e)
         return False
     return True
 
@@ -81,7 +84,7 @@ def select_all(cls):
                 setattr(obj, col, value)
             res.append(obj)
     except Exception as e:
-        print(e)
+        logger.info(e)
     return res
 
 
@@ -101,7 +104,7 @@ def select_by_key(cls, key):
                 setattr(obj, col, value)
             return obj
     except Exception as e:
-        print(e)
+        logger.info(e)
     return None
 
 
@@ -120,7 +123,7 @@ def update(obj) -> bool:
         conn.commit()
         return True
     except Exception as e:
-        print(e)
+        logger.info(e)
     return False
 
 
@@ -135,18 +138,22 @@ def delete(obj) -> bool:
         conn.commit()
         return True
     except Exception as e:
-        print(e)
+        logger.info(e)
     return False
 
 
-if __name__ == '__main__':
-    from bean import Info
+def _test():
+    from bean import Device
 
-    create_table(Info)
-    print(insert(Info(ip='1232131')))
+    create_table(Device)
+    print(insert(Device(ip='1232131')))
 
-    infos = select_all(Info)
-    for i in infos:
+    devices = select_all(Device)
+    for i in devices:
         print(i)
-    print(update(Info('gpu1', ' 666')))
-    print(select_by_key(Info, 'gpu1'))
+    print(update(Device('gpu1', ' 666')))
+    print(select_by_key(Device, 'gpu1'))
+
+
+if __name__ == '__main__':
+    _test()

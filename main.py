@@ -1,14 +1,11 @@
-import argparse
-import logging
-import os
 import signal
 import sys
-import network_util
+
 import gevent
 from gevent.pywsgi import WSGIServer
 
-from fserver import conf
-
+import config
+import network_util
 from app import app as application
 
 
@@ -25,17 +22,14 @@ def run_server():
     #     print('ERROR: {}\n\n{}\n'.format(e.msg, usage_short))
     #     sys.exit(-1)
 
-    print('fserver is available at following address:')
-    if conf.BIND_IP == '0.0.0.0':
-        ips = network_util.get_ip_v4()
-        for _ip in ips:
-            print('  http://%s:%s' % (_ip, conf.BIND_PORT))
-    else:
-        print('  http://%s:%s' % (conf.BIND_IP, conf.BIND_PORT))
+    print('InfoCollector is available at following address:')
+    ips = network_util.get_ip_v4()
+    for _ip in ips:
+        print('  http://%s:%s' % (_ip, config.BIND_PORT))
 
     gevent.signal(signal.SIGINT, _quit)
     gevent.signal(signal.SIGTERM, _quit)
-    http_server = WSGIServer((conf.BIND_IP, int(conf.BIND_PORT)), application)
+    http_server = WSGIServer(('0.0.0.0', int(config.BIND_PORT)), application)
     try:
         http_server.serve_forever()
     except Exception as e:

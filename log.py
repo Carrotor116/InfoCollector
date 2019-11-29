@@ -53,7 +53,7 @@ class MulLinesFormatter(logging.Formatter):
         return '\n'.join(res)
 
 
-_logger = logging.getLogger('fserver')
+_logger = logging.getLogger('InfoCollector')
 _handler = logging.StreamHandler(sys.stdout)
 _handler.setLevel(logging.DEBUG)
 _formatter = MulLinesFormatter(fmt=colorize('[P%(process)d|T%(asctime)s @%(filename)s]', Color.GREEN) + ' %(message)s',

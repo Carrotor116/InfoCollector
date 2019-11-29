@@ -3,16 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1.0, minimum-scale=1.0"/>
-    <title>Info Collector</title>
+    <title>Device Collector</title>
+    <style>
+        .mode-btn {
+            background-color: #8585ff;
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            text-align: center;
+            display: inline-block;
+            font-size: 16px;
+            font-weight: bold;
+            margin-left: 6px;
+            outline: none;
+        }
+
+        .mode-btn:disabled {
+            background-color: rgba(133, 133, 255, 0.36);
+        }
+
+        ul {
+            margin-left: 20px;
+            margin-right: 4px;
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        .hide {
+            display: none;
+        }
+
+        .check_box {
+            height: 13px;
+            width: 13px;
+            margin-top: 0;
+            margin-bottom: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            display: inline-block;
+        }
+
+        li {
+            min-height: 21px;
+            list-style-type: none;
+            white-space: nowrap;
+        }
+
+        .menu {
+            white-space: nowrap;
+        }
+
+        .li_head {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            position: relative;
+            text-align: center;
+        }
+
+        .circle {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background-color: black;
+            display: inline-block;
+            margin-bottom: 3px;
+        }
+    </style>
 </head>
 <body>
 
-<ul id="dir_ul">
-    {% for info in infos %}
-        <li>
-            {{ info }}
-        </li>
+
+<table id="tbl" frame=void>
+
+    <tr>
+        <th style="min-width: 80px;"> NAME</th>
+        <th style="min-width: 160px;"> IP</th>
+        <th style="min-width: 160px;"> MAC</th>
+        <th style="min-width: 160px;"> LAST_TIME</th>
+    </tr>
+    {% for device in devices %}
+        <tr>
+            <td style=" text-align: center">{{ device.name }}</td>
+            <td style=" text-align: center">{{ device.ip }}</td>
+            <td style=" text-align: center">{{ device.mac }}</td>
+            <td style=" text-align: center">{{ device.last_time }}</td>
+        </tr>
     {% endfor %}
-</ul>
+</table>
 </body>
 </html>

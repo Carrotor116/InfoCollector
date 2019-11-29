@@ -1,15 +1,15 @@
-class Info(object):
-    _TABLE_KEY = 'alias'
+class Device(object):
+    _TABLE_KEY = 'name'
 
-    def __init__(self, alias=None, ip=None, last_time=None, mac=None) -> None:
+    def __init__(self, name=None, ip=None, last_time=None, mac=None) -> None:
         super().__init__()
-        self.alias = alias
+        self.name = name
         self.ip = ip
         self.last_time = last_time
         self.mac = mac
 
     def __str__(self):
-        res = 'alias: {}, ip: {}, last_time: {}'.format(self.alias, self.ip, self.last_time)
+        res = 'name: {}, ip: {}, last_time: {}'.format(self.name, self.ip, self.last_time)
         return res
 
     def update(self, data: dict):
@@ -18,8 +18,9 @@ class Info(object):
         for k, v in data.items():
             if k in attr:
                 setattr(self, k, v)
+        return self
 
 
 if __name__ == '__main__':
-    print(Info.__dict__)
-    print(hasattr(Info, '_TABLE_KEY'))
+    print(Device.__dict__)
+    print(hasattr(Device, '_TABLE_KEY'))

@@ -4,7 +4,7 @@ from __future__ import print_function
 import os
 import re
 
-from fogging import _logger as logger
+from log import _logger as logger
 
 
 def _get_ip_v4_ipconfig():
