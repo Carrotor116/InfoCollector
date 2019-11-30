@@ -1,6 +1,6 @@
 import signal
 import sys
-
+import argparse
 import gevent
 from gevent.pywsgi import WSGIServer
 
@@ -29,5 +29,17 @@ def run_server():
         print(e)
 
 
-if __name__ == '__main__':
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--port', type=int, default=config.BIND_PORT,
+                        help='port for listening, default [{}]'.format(config.BIND_PORT))
+    parser.add_argument('--database', type=str, default=config.DATABASE,metavar='DB_NAME',
+                        help='sqlite3 database name, default [{}]'.format(config.DATABASE))
+    args = parser.parse_args()
+    config.BIND_PORT = args.port
+    config.DATABASE = args.database
     run_server()
+
+
+if __name__ == '__main__':
+    main()
