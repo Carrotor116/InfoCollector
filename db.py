@@ -106,7 +106,8 @@ def select_by_key(cls, key):
     cols = list(_get_cols2value(cls).keys())
 
     sql = """SELECT {} FROM {} WHERE {};"""
-    sql = sql.format(', '.join(cols), table_name, "{}='{}'".format(pri_key, key))
+    sql = sql.format(', '.join(cols), table_name,  "{}='{}'".format(pri_key, _json_dumps(key)))
+    print(sql)
     try:
         cursor = conn.execute(sql)
         row = cursor.fetchone()
