@@ -4,18 +4,16 @@ import argparse
 import time
 
 
-def get_links():
+def get_link2mac():
     lines = os.popen('ip link').read().split('\n')
     lines_link = [lines[i * 2] for i in range(int(len(lines) / 2))]
     lines_macs = [lines[i * 2 + 1] for i in range(int(len(lines) / 2))]
-    links, macs = [], []
-    for li in lines_link:
-        link = li.strip().split(': ')[1]
-        links.append(link)
-    for li in lines_macs:
-        mac = li.strip().split(' ')[1]
-        macs.append(mac)
-    return links, macs
+    ret = dict()
+    for ll, ml in zip(lines_link, lines_macs):
+        link = ll.strip().split(': ')[1]
+        mac = ml.strip().split(' ')[1]
+        ret[link] = mac
+    return ret
 
 
 def get_ipv4(link):
@@ -24,36 +22,39 @@ def get_ipv4(link):
         return []
     lines = lines[1:]
     lines = [lines[i * 2] for i in range(int(len(lines) / 2))]
-    ips = []
+    ips = set()
     for li in lines:
         ip = li.strip().split(' ')[1].split('/')[0]
-        ips.append(ip)
+        ips.add(ip)
+    ignore = ('127.0.0.1',)
+    for i in ignore:
+        if i in ips:
+            ips.remove(i)
+    ips = [i for i in ips if not i.startswith('169.254')]
     return ips
 
 
-def find_ip(ip_pattern):
-    links, macs = get_links()
-    ret = []
-    for lk, mac in zip(links, macs):
-        ips = get_ipv4(lk)
-        for ip in ips:
-            if ip_pattern in ip:
-                ret.append((lk, mac, ip))
-    return ret
+def get_links():
+    link2mac = get_link2mac()
+    links = []
+    for link, mac in link2mac.items():
+        ips = get_ipv4(link)
+        links.append({'name': link,
+                      'mac': mac,
+                      'ips': ips})
+    return links
 
 
-def report_ip(service_ip, service_port, ip_pattern, device_name):
-    ip_info = find_ip(ip_pattern)
-    if len(ip_info) == 0:
-        return
-    assert len(ip_info) == 1, ip_info
-    _, mac, ip = ip_info[0]
+def report_ip(service_ip, service_port, device_name):
+    links = get_links()
 
     t = time.strftime('%Y.%m.%d_%H.%M.%S', time.localtime())
-    data = {'ip': ip, 'mac': mac, 'name': device_name, 'last_time': t}
+    data = {'name': device_name, 'links': links, 'last_time': t}
     url = 'http://{}:{}/submit'.format(service_ip, service_port)
-    ok = requests.post(url, json=data)
-    return ok
+    resp = requests.post(url, json=data).json()
+    if resp is not None and 'status' in resp:
+        return resp['status'] == 'succeed'
+    return False
 
 
 if __name__ == '__main__':
@@ -61,7 +62,6 @@ if __name__ == '__main__':
     parser.add_argument('--service_ip', required=True)
     parser.add_argument('--service_port', required=True, type=int)
     parser.add_argument('--device_name', required=True)
-    parser.add_argument('--ip_pattern', default='172.17')
     args = parser.parse_args()
-    ok = report_ip(args.service_ip, args.service_port, args.ip_pattern, args.device_name)
+    ok = report_ip(args.service_ip, args.service_port, args.device_name)
     print('succeed' if ok else 'failed')

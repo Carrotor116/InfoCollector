@@ -83,12 +83,16 @@
         <th style="min-width: 160px;"> LAST_TIME</th>
     </tr>
     {% for device in devices %}
-        <tr>
-            <td style=" text-align: center">{{ device.name }}</td>
-            <td style=" text-align: center">{{ device.ip }}</td>
-            <td style=" text-align: center">{{ device.mac }}</td>
-            <td style=" text-align: center">{{ device.last_time }}</td>
-        </tr>
+        {% for link in device.links %}
+            {% for ip in link.ips %}
+                <tr>
+                    <td style=" text-align: center">{{ device.name }}</td>
+                    <td style=" text-align: center">{{ ip }}</td>
+                    <td style=" text-align: center">{{ link.mac }}</td>
+                    <td style=" text-align: center">{{ device.last_time }}</td>
+                </tr>
+            {% endfor %}
+        {% endfor %}
     {% endfor %}
 </table>
 </body>

@@ -1,9 +1,15 @@
+import json
 import sqlite3
 
 import config
+from bean import JEncoder
 from log import _logger as logger
 
 conn = sqlite3.connect(config.DATABASE)
+
+
+def _json_dumps(o):
+    return json.dumps(o, cls=JEncoder)
 
 
 def _get_table_name(obj):
@@ -28,8 +34,9 @@ def _get_cols2value(obj):
         return dict()
     dic = obj.__dict__
     attr = [i for i in dic.keys() if not i.startswith('_')]
-    attr = sorted([i for i in attr if not callable(getattr(obj, i))])
-    return {k: dic[k] for k in attr}
+    attr2val = {a: getattr(obj, a) for a in attr}
+    attr2val = {a: v for a, v in attr2val.items() if not callable(v)}
+    return attr2val
 
 
 def create_table(cls) -> bool:
@@ -50,6 +57,7 @@ def create_table(cls) -> bool:
         conn.commit()
         return True
     except Exception as e:
+        logger.info(sql)
         logger.info(e)
     return False
 
@@ -57,14 +65,17 @@ def create_table(cls) -> bool:
 def insert(obj) -> bool:
     table_name = _get_table_name(obj)
     cols2value = _get_cols2value(obj)
-    cols = sorted(list(cols2value.keys()))
+    cols = cols2value.keys()
     value = [cols2value[c] for c in cols]
     sql = """INSERT INTO {} ({}) VALUES ({});"""
-    sql = sql.format(table_name, ','.join(cols), ','.join(["'{}'".format(v) for v in value]))
+    sql = sql.format(table_name,
+                     ','.join(cols),
+                     ','.join(["'{}'".format(_json_dumps(v)) for v in value]))
     try:
         conn.cursor().execute(sql)
         conn.commit()
     except Exception as e:
+        logger.info(sql)
         logger.info(e)
         return False
     return True
@@ -81,9 +92,10 @@ def select_all(cls):
         for row in cursor:
             obj = cls()
             for col, value in zip(cols, row):
-                setattr(obj, col, value)
+                setattr(obj, col, json.loads(value))
             res.append(obj)
     except Exception as e:
+        logger.info(sql)
         logger.info(e)
     return res
 
@@ -101,9 +113,10 @@ def select_by_key(cls, key):
         if row is not None:
             obj = cls()
             for col, value in zip(cols, row):
-                setattr(obj, col, value)
+                setattr(obj, col, json.loads(value))
             return obj
     except Exception as e:
+        logger.info(sql)
         logger.info(e)
     return None
 
@@ -116,13 +129,14 @@ def update(obj) -> bool:
 
     sql = """UPDATE {} SET {} WHERE {};"""
     sql = sql.format(table_name,
-                     ','.join(["{}='{}'".format(c, v) for c, v in cols2value.items()]),
-                     "{}='{}'".format(pri_key, pri_value))
+                     ','.join(["{}='{}'".format(c, _json_dumps(v)) for c, v in cols2value.items()]),
+                     "{}='{}'".format(pri_key, _json_dumps(pri_value)))
     try:
         conn.cursor().execute(sql)
         conn.commit()
         return True
     except Exception as e:
+        logger.info(sql)
         logger.info(e)
     return False
 
@@ -131,28 +145,20 @@ def delete(obj) -> bool:
     assert not isinstance(obj, type)
     pri_key, pri_val = _get_primary_key(obj)
     table_name = _get_table_name(obj)
-    sql = """DELETE FROM {} WHERE {}='{}';"""
-    sql = sql.format(table_name, pri_key, pri_val)
+    sql = """DELETE FROM {} WHERE {}="'{}'";"""
+    sql = sql.format(table_name, pri_key, _json_dumps(pri_val))
     try:
         conn.cursor().execute(sql)
         conn.commit()
         return True
     except Exception as e:
+        logger.info(sql)
         logger.info(e)
     return False
 
 
 def _test():
-    from bean import Device
-
-    create_table(Device)
-    print(insert(Device(ip='1232131')))
-
-    devices = select_all(Device)
-    for i in devices:
-        print(i)
-    print(update(Device('gpu1', ' 666')))
-    print(select_by_key(Device, 'gpu1'))
+    pass
 
 
 if __name__ == '__main__':

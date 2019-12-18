@@ -3,7 +3,7 @@ from flask import render_template, abort
 
 import db
 from auth import auth_devices
-from bean import Device
+from bean import Device, Link
 
 app = Flask(__name__, template_folder='templates')
 db.create_table(Device)
@@ -26,8 +26,12 @@ def submit_devices():
     if data is None:
         return response_failed('Only support json data')
 
-    device = Device().update(data)
-    if not auth_devices(device):
+    try:
+        device = Device(**data)
+        device.links = [Link().update(**l) for l in data['links']]
+        assert auth_devices(device)
+    except Exception:
+        print('invalid data: {}'.format(data))
         return response_failed('Invalid Device')
     dev = db.select_by_key(Device, device.name)
     if dev is None:
@@ -43,4 +47,8 @@ def submit_devices():
 def index():
     devices = db.select_all(Device)
     devices.sort(key=lambda d: d.name)
+    for d in devices:
+        d.links.sort(key=lambda l: l['mac'])
+        for link in d.links:
+            link['ips'].sort()
     return render_template('index.html', devices=devices)

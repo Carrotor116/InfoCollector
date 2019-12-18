@@ -1,26 +1,43 @@
-class Device(object):
-    _TABLE_KEY = 'name'
+import json
+from typing import List
 
-    def __init__(self, name=None, ip=None, last_time=None, mac=None) -> None:
-        super().__init__()
-        self.name = name
-        self.ip = ip
-        self.last_time = last_time
-        self.mac = mac
 
-    def __str__(self):
-        res = 'name: {}, ip: {}, last_time: {}'.format(self.name, self.ip, self.last_time)
-        return res
+class JEncoder(json.JSONEncoder):
+    def default(self, o):
+        att = [k for k in o.__dict__.keys() if not k.startswith('_')]
+        att2val = {a: getattr(o, a) for a in att}
+        att2val = {k: v for k, v in att2val.items() if not callable(v)}
+        return att2val
 
-    def update(self, data: dict):
-        ignores = [self.update.__name__]
-        attr = [i for i in self.__dict__.keys() if i not in ignores]
-        for k, v in data.items():
-            if k in attr:
-                setattr(self, k, v)
+
+class BaseObject(object):
+    def __str__(self) -> str:
+        return '{}: {}'.format(self.__class__.__name__, json.dumps(self, cls=JEncoder))
+
+    def update(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
         return self
 
 
+class Link(BaseObject):
+    def __init__(self, name=None, ips: List[str] = None, mac=None) -> None:
+        super().__init__()
+        self.name = name
+        self.ips = ips
+        self.mac = mac
+
+
+class Device(BaseObject):
+    _TABLE_KEY = 'name'
+
+    def __init__(self, name=None, links: List[Link] = None, last_time=None) -> None:
+        super().__init__()
+        self.name = name
+        self.links = links
+        self.last_time = last_time
+
+
 if __name__ == '__main__':
-    print(Device.__dict__)
-    print(hasattr(Device, '_TABLE_KEY'))
+    devices = Device(links=[Link(), Link()])
+    print('{}'.format(devices))
