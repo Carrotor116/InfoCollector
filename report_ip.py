@@ -59,8 +59,8 @@ def report_ip(service_ip, service_port, device_name):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--service_ip', required=True)
-    parser.add_argument('--service_port', required=True, type=int)
+    parser.add_argument('--server_ip', required=True)
+    parser.add_argument('--server_port', required=True, type=int)
     parser.add_argument('--device_name', required=True)
     args = parser.parse_args()
     ok = report_ip(args.service_ip, args.service_port, args.device_name)

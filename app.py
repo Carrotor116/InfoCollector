@@ -45,10 +45,26 @@ def submit_devices():
 
 @app.route('/')
 def index():
+    ag = request.headers.get('User-Agent')
+    ag = ag.lower().split('/')[0]
+
     devices = db.select_all(Device)
     devices.sort(key=lambda d: d.name)
     for d in devices:
         d.links.sort(key=lambda l: l['mac'])
         for link in d.links:
             link['ips'].sort()
+
+    if ag in ('curl', 'wget'):
+        msg = []
+        for device in devices:
+            for link in device.links:
+                for ip in link['ips']:
+                    msg.append('{}\t{}\t{}\t{}'.format(device.name, ip, link['mac'], device.last_time))
+        if len(msg) == 0:
+            msg = 'No device online\n'
+        else:
+            msg = '\n'.join(msg) + '\n'
+        return msg
+
     return render_template('index.html', devices=devices)

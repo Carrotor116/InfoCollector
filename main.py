@@ -20,8 +20,8 @@ def run_server():
     for _ip in ips:
         print('  http://%s:%s' % (_ip, config.BIND_PORT))
 
-    gevent.signal(signal.SIGINT, _quit)
-    gevent.signal(signal.SIGTERM, _quit)
+    gevent.signal_handler(signal.SIGINT, _quit)
+    gevent.signal_handler(signal.SIGTERM, _quit)
     http_server = WSGIServer(('0.0.0.0', int(config.BIND_PORT)), application)
     try:
         http_server.serve_forever()
